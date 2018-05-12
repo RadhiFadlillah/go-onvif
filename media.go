@@ -9,8 +9,10 @@ var mediaXMLNs = []string{
 func (device Device) GetProfiles() ([]MediaProfile, error) {
 	// Create SOAP
 	soap := SOAP{
-		Body:  "<trt:GetProfiles/>",
-		XMLNs: mediaXMLNs,
+		Body:     "<trt:GetProfiles/>",
+		XMLNs:    mediaXMLNs,
+		User:     device.User,
+		Password: device.Password,
 	}
 
 	// Send SOAP request
@@ -132,6 +134,8 @@ func (device Device) GetStreamURI(profileToken, protocol string) (MediaURI, erro
 			</trt:StreamSetup>
 			<trt:ProfileToken>` + profileToken + `</trt:ProfileToken>
 		</trt:GetStreamUri>`,
+		User:     device.User,
+		Password: device.Password,
 	}
 
 	// Send SOAP request

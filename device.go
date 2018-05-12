@@ -1,6 +1,8 @@
 package onvif
 
 import (
+	//"fmt"
+
 	"strings"
 )
 
@@ -13,8 +15,10 @@ var deviceXMLNs = []string{
 func (device Device) GetInformation() (DeviceInformation, error) {
 	// Create SOAP
 	soap := SOAP{
-		Body:  "<tds:GetDeviceInformation/>",
-		XMLNs: deviceXMLNs,
+		Body:     "<tds:GetDeviceInformation/>",
+		XMLNs:    deviceXMLNs,
+		User:     device.User,
+		Password: device.Password,
 	}
 
 	// Send SOAP request
@@ -42,6 +46,76 @@ func (device Device) GetInformation() (DeviceInformation, error) {
 	return result, nil
 }
 
+// GetSystemDateAndTime get date/time of ONVIF camera
+func (device Device) GetSystemDateAndTime() (SystemDateAndTime, error) {
+	// Create SOAP
+	soap := SOAP{
+		Body:     "<tds:GetSystemDateAndTime/>",
+		XMLNs:    deviceXMLNs,
+		User:     device.User,
+		Password: device.Password,
+	}
+
+	// Send SOAP request
+	response, err := soap.SendRequest(device.XAddr)
+	if err != nil {
+		return SystemDateAndTime{}, err
+	}
+
+	// Parse response to interface
+	dateAndTime, err := response.ValueForPath("Envelope.Body.GetSystemDateAndTimeResponse.SystemDateAndTime")
+	if err != nil {
+		return SystemDateAndTime{}, err
+	}
+
+	// Parse interface to struct
+	result := SystemDateAndTime{}
+	if mapInfo, ok := dateAndTime.(map[string]interface{}); ok {
+		result.DateTimeType = interfaceToString(mapInfo["DateTimeType"])
+		result.DaylightSavings = interfaceToBool(mapInfo["DaylightSavings"])
+
+		timeZone := TimeZone{}
+		if mapTZ, ok := mapInfo["TimeZone"].(map[string]interface{}); ok {
+			timeZone.TZ = interfaceToString(mapTZ["TZ"])
+		}
+		result.TimeZone = timeZone
+
+		utcDate := Date{}
+		utcTime := Time{}
+		if utcDateTimeMap, ok := mapInfo["UTCDateTime"].(map[string]interface{}); ok {
+			if utcDateMap, ok := utcDateTimeMap["Date"].(map[string]interface{}); ok {
+				utcDate.Year = interfaceToInt(utcDateMap["Year"])
+				utcDate.Month = interfaceToInt(utcDateMap["Month"])
+				utcDate.Day = interfaceToInt(utcDateMap["Day"])
+				if utcTimeMap, ok := utcDateTimeMap["Time"].(map[string]interface{}); ok {
+					utcTime.Hour = interfaceToInt(utcTimeMap["Hour"])
+					utcTime.Minute = interfaceToInt(utcTimeMap["Minute"])
+					utcTime.Second = interfaceToInt(utcTimeMap["Second"])
+				}
+			}
+		}
+		localDate := Date{}
+		localTime := Time{}
+		if localDateTimeMap, ok := mapInfo["LocalDateTime"].(map[string]interface{}); ok {
+			if localDateMap, ok := localDateTimeMap["Date"].(map[string]interface{}); ok {
+				localDate.Year = interfaceToInt(localDateMap["Year"])
+				localDate.Month = interfaceToInt(localDateMap["Month"])
+				localDate.Day = interfaceToInt(localDateMap["Day"])
+				if localTimeMap, ok := localDateTimeMap["Time"].(map[string]interface{}); ok {
+					localTime.Hour = interfaceToInt(localTimeMap["Hour"])
+					localTime.Minute = interfaceToInt(localTimeMap["Minute"])
+					localTime.Second = interfaceToInt(localTimeMap["Second"])
+				}
+			}
+		}
+		result.UTCDateTime.Date = utcDate
+		result.UTCDateTime.Time = utcTime
+		result.LocalDateTime.Date = localDate
+		result.LocalDateTime.Time = localTime
+	}
+	return result, nil
+}
+
 // GetCapabilities fetch info of ONVIF camera's capabilities
 func (device Device) GetCapabilities() (DeviceCapabilities, error) {
 	// Create SOAP
@@ -50,6 +124,8 @@ func (device Device) GetCapabilities() (DeviceCapabilities, error) {
 		Body: `<tds:GetCapabilities>
 			<tds:Category>All</tds:Category>
 		</tds:GetCapabilities>`,
+		User:     device.User,
+		Password: device.Password,
 	}
 
 	// Send SOAP request
@@ -119,8 +195,10 @@ func (device Device) GetCapabilities() (DeviceCapabilities, error) {
 func (device Device) GetDiscoveryMode() (string, error) {
 	// Create SOAP
 	soap := SOAP{
-		Body:  "<tds:GetDiscoveryMode/>",
-		XMLNs: deviceXMLNs,
+		Body:     "<tds:GetDiscoveryMode/>",
+		XMLNs:    deviceXMLNs,
+		User:     device.User,
+		Password: device.Password,
 	}
 
 	// Send SOAP request
@@ -138,8 +216,10 @@ func (device Device) GetDiscoveryMode() (string, error) {
 func (device Device) GetScopes() ([]string, error) {
 	// Create SOAP
 	soap := SOAP{
-		Body:  "<tds:GetScopes/>",
-		XMLNs: deviceXMLNs,
+		Body:     "<tds:GetScopes/>",
+		XMLNs:    deviceXMLNs,
+		User:     device.User,
+		Password: device.Password,
 	}
 
 	// Send SOAP request
@@ -170,8 +250,10 @@ func (device Device) GetScopes() ([]string, error) {
 func (device Device) GetHostname() (HostnameInformation, error) {
 	// Create SOAP
 	soap := SOAP{
-		Body:  "<tds:GetHostname/>",
-		XMLNs: deviceXMLNs,
+		Body:     "<tds:GetHostname/>",
+		XMLNs:    deviceXMLNs,
+		User:     device.User,
+		Password: device.Password,
 	}
 
 	// Send SOAP request

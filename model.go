@@ -18,6 +18,46 @@ type DeviceInformation struct {
 	SerialNumber    string
 }
 
+// TimeZone data for GetSystemTimeAndDate
+type TimeZone struct {
+	TZ string
+}
+
+// UTCDateTime data for GetSystemTimeAndDate
+type UTCDateTime struct {
+	Time Time
+	Date Date
+}
+
+// LocalDateTime data for GetSystemTimeAndDate
+type LocalDateTime struct {
+	Time Time
+	Date Date
+}
+
+// Time data for GetSystemTimeAndDate
+type Time struct {
+	Hour   int
+	Minute int
+	Second int
+}
+
+// Date data for GetSystemTimeAndDate
+type Date struct {
+	Year  int
+	Month int
+	Day   int
+}
+
+// SystemDateAndTime data for GetSystemTimeAndDate
+type SystemDateAndTime struct {
+	DateTimeType    string
+	DaylightSavings bool
+	TimeZone        TimeZone
+	UTCDateTime     UTCDateTime
+	LocalDateTime   LocalDateTime
+}
+
 // NetworkCapabilities contains networking capabilities of ONVIF camera
 type NetworkCapabilities struct {
 	DynDNS     bool

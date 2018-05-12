@@ -7,7 +7,9 @@ import (
 )
 
 var testDevice = Device{
-	XAddr: "http://192.168.1.75:5000/onvif/device_service",
+	XAddr:    "http://10.10.2.32/onvif/device_service",
+	User:     "wtsonvif",
+	Password: "watchtower1",
 }
 
 func interfaceToString(src interface{}) string {

@@ -30,6 +30,18 @@ func TestGetCapabilities(t *testing.T) {
 	fmt.Println(js)
 }
 
+func TestGetSystemDateAndTime(t *testing.T) {
+	log.Println("Test GetSystemDateAndTime")
+
+	res, err := testDevice.GetSystemDateAndTime()
+	if err != nil {
+		t.Error(err)
+	}
+
+	js := prettyJSON(&res)
+	fmt.Println(js)
+}
+
 func TestGetDiscoveryMode(t *testing.T) {
 	log.Println("Test GetDiscoveryMode")
 
