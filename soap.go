@@ -88,7 +88,21 @@ func (soap SOAP) createRequest() string {
 
 	// Set request header
 	if soap.User != "" {
-		request += "<s:Header>" + soap.createUserToken() + "</s:Header>"
+		soapHeader, err := soap.createUserToken()
+		if err != nil {
+			request += "<s:Header />"
+			soap.Body = `
+				<s:Fault>
+				<s:Code>
+					<s:Value>s:Receiver</s:Value>
+				</s:Code>
+				<s:Reason>
+					<s:Text xml:lang="en-US">Error creating user token</s:Text>
+				</s:Reason>
+				</s:Fault>`
+		} else {
+			request += "<s:Header>" + soapHeader + "</s:Header>"
+		}
 	}
 
 	// Set request body
@@ -104,8 +118,13 @@ func (soap SOAP) createRequest() string {
 	return request
 }
 
-func (soap SOAP) createUserToken() string {
-	nonce := uuid.NewV4().Bytes()
+func (soap SOAP) createUserToken() (string, error) {
+	newUuid, err := uuid.NewV4()
+	if err != nil {
+		return "", err
+	}
+	nonce := newUuid.Bytes()
+
 	nonce64 := base64.StdEncoding.EncodeToString(nonce)
 	timestamp := time.Now().Add(soap.TokenAge).UTC().Format(time.RFC3339)
 	token := string(nonce) + timestamp + soap.Password
@@ -122,5 +141,5 @@ func (soap SOAP) createUserToken() string {
     		<Nonce EncodingType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary">` + nonce64 + `</Nonce>
     		<Created xmlns="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">` + timestamp + `</Created>
 		</UsernameToken>
-	</Security>`
+	</Security>`, nil
 }
